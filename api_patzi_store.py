@@ -24,17 +24,22 @@ def get_all_products():
 
 
 def get_specific_product():
-    """Consulta y muestra un producto específico por ID."""
+    """Consulta un producto específico por ID."""
+    product_id = input("Ingresa el ID del producto que quieres consultar: ")
+    url = f"{base_url}products/{product_id}"
     try:
-        product_id = input("Ingresa el ID del producto que quieres consultar: ")
-        response = requests.get(f"{base_url}products/{product_id}")
-        response.raise_for_status()
-        product = response.json()
-        print("\n--- DETALLES DEL PRODUCTO ---")
-        print(json.dumps(product, indent=4))
-        print("-----------------------------\n")
+        response = requests.get(url)
+        if response.status_code == 200:
+            product = response.json()
+            print("\n--- PRODUCTO ENCONTRADO ---")
+            print(json.dumps(product, indent=4))
+            print("----------------------------\n")
+        elif response.status_code in [400, 404]:
+            print(f"❌ El producto con ID {product_id} no existe en la tienda.")
+        else:
+            print(f"⚠️ Error inesperado: {response.status_code}")
     except requests.exceptions.RequestException as e:
-        print(f"Error al obtener el producto: {e}")
+        print(f"Error de conexión: {e}")
 
 
 def create_product():
@@ -46,6 +51,8 @@ def create_product():
         description = input("Descripción: ")
         category_id = int(input("ID de la categoría: "))
         images = input("URL de la imagen (o déjalo en blanco): ")
+        if not images:
+            images = "https://via.placeholder.com/150"
 
         new_product = {
             "title": title,
